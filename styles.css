@@ -1,0 +1,22 @@
+body {
+  font-family: sans-serif;
+  max-width: 600px;
+  margin: 40px auto;
+}
+
+button {
+  margin-top: 10px;
+}
+
+.result {
+  margin-top: 20px;
+}
+
+img {
+  max-width: 100%;
+}
+
+#downloadLink {
+  display: none;
+  margin-top: 10px;
+}
