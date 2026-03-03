@@ -13,6 +13,9 @@ def health():
     return {"status": "ok"} 
 
 
+def downscale_image(image: Image.Image) -> Image.Image:
+    pass 
+
 @app.post("/remove-bg")
 async def remove_bg(file: UploadFile = File(...)) -> Response:
     if file.content_type not in ALLOWED_CONTENT_TYPES:
