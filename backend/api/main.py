@@ -4,6 +4,8 @@ from rembg import remove
 from PIL import Image, UnidentifiedImageError  
 import io 
 
+MAX_DIMENSION = 1500 
+
 ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/jpg"}
 
 app = FastAPI()
@@ -14,7 +16,16 @@ def health():
 
 
 def downscale_image(image: Image.Image) -> Image.Image:
-    pass 
+    image = image.convert("RGBA")
+
+    if max(image.width, image.height) <= MAX_DIMENSION:
+        return image
+
+    scale_factor = MAX_DIMENSION / max(image.width, image.height)
+    new_width = int(image.width * scale_factor)
+    new_height = int(image.height * scale_factor) 
+
+    return image.resize((new_width, new_height), Image.Resampling.LANCZOS)  
 
 @app.post("/remove-bg")
 async def remove_bg(file: UploadFile = File(...)) -> Response:
@@ -31,6 +42,7 @@ async def remove_bg(file: UploadFile = File(...)) -> Response:
     except UnidentifiedImageError:
         raise HTTPException(status_code=400, detail="Could not read image file")
 
+    image = downscale_image(image) 
     output = remove(image)
 
     buffer = io.BytesIO()
