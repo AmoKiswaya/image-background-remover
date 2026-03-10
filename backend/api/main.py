@@ -19,16 +19,34 @@ def health():
 
 
 async def read_upload_with_limit(
-    file: UploadFile, 
+    upload: UploadFile, 
     max_bytes: int = MAX_UPLOAD_BYTES,
     chunk_size: int = CHUNK_SIZE
     ) -> bytes:
+    """
+    Reads an uploaded file in chunks, rejecting it if it exceeds max_bytes.
+    Returns the file contents as bytes. 
+    """
 
     buffer = io.BytesIO()
     bytes_read = 0
 
-    
-    pass 
+    while True:
+        chunk = await upload.read(CHUNK_SIZE)
+        bytes_read += len(chunk) 
+
+        if bytes_read > max_bytes:
+            buffer.close()
+            raise HTTPException(
+                status_code=413,
+                detail=f"File too large. Maximum allowed size is {max_bytes // {1024 * 1024}}MB."
+            )
+
+        buffer.write(chunk)
+
+        contents = buffer.getvalue()
+        buffer.close()
+        return contents 
 
 def downscale_image(image: Image.Image) -> Image.Image:
     image = image.convert("RGBA")
@@ -50,7 +68,7 @@ async def remove_bg(file: UploadFile = File(...)) -> Response:
             detail="File type not supported. Allowed types: PNG, JPEG or JPG"
         )
     
-    image_bytes = await file.read()
+    image_bytes = await read_upload_with_limit(file)
 
     try:
         image = Image.open(io.BytesIO(image_bytes))
