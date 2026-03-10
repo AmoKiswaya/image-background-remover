@@ -32,7 +32,7 @@ async def read_upload_with_limit(
     bytes_read = 0
 
     while True:
-        chunk = await upload.read(CHUNK_SIZE)
+        chunk = await upload.read(chunk_size)
         bytes_read += len(chunk) 
 
         if bytes_read > max_bytes:
