@@ -4,7 +4,10 @@ from rembg import remove
 from PIL import Image, UnidentifiedImageError  
 import io 
 
+MAX_UPLOAD_MB = 10
+MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 MAX_DIMENSION = 1500 
+CHUNK_SIZE = 1024 * 1024
 
 ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/jpg"}
 
@@ -14,6 +17,18 @@ app = FastAPI()
 def health():
     return {"status": "ok"} 
 
+
+async def read_upload_with_limit(
+    file: UploadFile, 
+    max_bytes: int = MAX_UPLOAD_BYTES,
+    chunk_size: int = CHUNK_SIZE
+    ) -> bytes:
+
+    buffer = io.BytesIO()
+    bytes_read = 0
+
+    
+    pass 
 
 def downscale_image(image: Image.Image) -> Image.Image:
     image = image.convert("RGBA")
