@@ -1,8 +1,9 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
-from rembg import remove
+from rembg import remove, new_session
 from PIL import Image, UnidentifiedImageError  
+from contextlib import asynccontextmanager
 import io 
 import os
 
@@ -13,7 +14,17 @@ CHUNK_SIZE = 1024 * 1024
 
 ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/jpg"}
 
-app = FastAPI()
+session = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global session
+    session = new_session("u2net")
+    yield
+    session = None
+
+
+app = FastAPI(lifespan=lifespan)
 
 CORS_ORIGIN_ENV = os.getenv("CORS_ORIGINS", "")
 if CORS_ORIGIN_ENV:
@@ -36,6 +47,9 @@ app.add_middleware(
     allow_methods=["GET", "POST"],     
     allow_headers=["Content-Type"],
 )
+
+
+
 
 @app.get("/health")
 def health():
