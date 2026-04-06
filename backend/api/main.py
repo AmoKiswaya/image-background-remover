@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from rembg import remove
 from PIL import Image, UnidentifiedImageError  
 import io 
+import os
 
 MAX_UPLOAD_MB = 10
 MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
@@ -13,6 +14,28 @@ CHUNK_SIZE = 1024 * 1024
 ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/jpg"}
 
 app = FastAPI()
+
+CORS_ORIGIN_ENV = os.getenv("CORS_ORIGINS", "")
+if CORS_ORIGIN_ENV:
+    CORS_ORIGINS = [
+        origin.strip()
+        for origin in CORS_ORIGIN_ENV.split(".")
+        if origin.strip()
+    ]
+else:
+    CORS_ORIGINS = [
+        "http://localhost:3000",
+        "http://localhost:5500",
+        "http://localhost:9001",
+    ]
+
+app.add_middleware(
+     CORSMiddleware,
+    allow_origins=CORS_ORIGINS,       
+    allow_credentials=True,            
+    allow_methods=["GET", "POST"],     
+    allow_headers=["Content-Type"],
+)
 
 @app.get("/health")
 def health():
