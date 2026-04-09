@@ -30,7 +30,7 @@ CORS_ORIGIN_ENV = os.getenv("CORS_ORIGINS", "")
 if CORS_ORIGIN_ENV:
     CORS_ORIGINS = [
         origin.strip()
-        for origin in CORS_ORIGIN_ENV.split(".")
+        for origin in CORS_ORIGIN_ENV.split(",")
         if origin.strip()
     ]
 else:
@@ -38,6 +38,7 @@ else:
         "http://localhost:3000",
         "http://localhost:5500",
         "http://localhost:9001",
+        "http://127.0.0.1:5500",
     ]
 
 app.add_middleware(
@@ -69,22 +70,25 @@ async def read_upload_with_limit(
     buffer = io.BytesIO()
     bytes_read = 0
 
-    while True:
-        chunk = await upload.read(chunk_size)
-        bytes_read += len(chunk) 
+    try:
+        while chunk := await upload.read(chunk_size):
+            bytes_read += len(chunk) 
 
-        if bytes_read > max_bytes:
-            buffer.close()
-            raise HTTPException(
-                status_code=413,
-                detail=f"File too large. Maximum allowed size is {max_bytes // {1024 * 1024}}MB."
-            )
+            if bytes_read > max_bytes:
+                buffer.close()
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"File too large. Maximum allowed size is {max_bytes // (1024 * 1024)}MB."
+                )
 
-        buffer.write(chunk)
+            buffer.write(chunk)
+        
+        return buffer.getvalue() 
+    
+    finally:
+        buffer.close() 
 
-        contents = buffer.getvalue()
-        buffer.close()
-        return contents 
+
 
 def downscale_image(image: Image.Image) -> Image.Image:
     image = image.convert("RGBA")

@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  "https://background-remover-127860840211.europe-west1.run.app";
+  "http://127.0.0.1:5500";
 
 // DOM Elements
 const elements = {
