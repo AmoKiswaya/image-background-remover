@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  "http://127.0.0.1:5500";
+  "http://127.0.0.1:8000";
 
 // DOM Elements
 const elements = {
@@ -142,10 +142,11 @@ elements.form.addEventListener("submit", async (event) => {
     if (!response.ok) {
       let errorMessage = "Request failed";
       try {
-        const data = await response.json();
+        const text = await response.text();
+        const data = JSON.parse(text);
         if (data.detail) errorMessage = data.detail;
       } catch (e) {
-        errorMessage = await response.text();
+        
       }
       throw new Error(errorMessage);
     }
